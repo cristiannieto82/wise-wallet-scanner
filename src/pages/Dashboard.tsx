@@ -2,17 +2,87 @@ import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { formatCLP } from '@/lib/formatters';
 import { ArrowRight, TrendingDown, Leaf, Users, ShoppingBag, ListChecks, GitCompare } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { ScoreBar } from '@/components/ScoreBar';
+import { useQuery } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
+import { useEffect } from 'react';
 
 export const Dashboard = () => {
-  // Mock data - en producción vendría de un store/API
-  const stats = {
-    totalSavings: 45680,
-    avgEcoScore: 76,
-    avgSocialScore: 72,
-    listsCount: 8,
-  };
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      if (!user) {
+        navigate('/auth');
+      }
+    });
+  }, [navigate]);
+
+  const { data: stats } = useQuery({
+    queryKey: ['dashboard-stats'],
+    queryFn: async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      if (!user) {
+        return {
+          totalSavings: 0,
+          avgEcoScore: 50,
+          avgSocialScore: 50,
+          listsCount: 0
+        };
+      }
+
+      const { data: lists } = await supabase
+        .from('shopping_lists')
+        .select(`
+          *,
+          shopping_list_items(
+            quantity,
+            products(*)
+          )
+        `)
+        .eq('user_id', user.id);
+
+      if (!lists) return {
+        totalSavings: 0,
+        avgEcoScore: 50,
+        avgSocialScore: 50,
+        listsCount: 0
+      };
+
+      let totalEco = 0;
+      let totalSocial = 0;
+      let productCount = 0;
+      let totalSavings = 0;
+
+      lists.forEach((list: any) => {
+        list.shopping_list_items?.forEach((item: any) => {
+          if (item.products) {
+            totalEco += item.products.eco_score;
+            totalSocial += item.products.social_score;
+            productCount++;
+          }
+        });
+        
+        const listTotal = list.shopping_list_items?.reduce(
+          (sum: number, item: any) => sum + (item.products?.last_seen_price_clp || 0) * item.quantity,
+          0
+        ) || 0;
+        
+        if (listTotal < list.budget_clp) {
+          totalSavings += (list.budget_clp - listTotal);
+        }
+      });
+
+      return {
+        totalSavings,
+        avgEcoScore: productCount > 0 ? Math.round(totalEco / productCount) : 50,
+        avgSocialScore: productCount > 0 ? Math.round(totalSocial / productCount) : 50,
+        listsCount: lists.length
+      };
+    }
+  });
 
   return (
     <div className="container py-8 space-y-8">
@@ -51,7 +121,7 @@ export const Dashboard = () => {
             <TrendingDown className="h-5 w-5" />
             <p className="text-sm font-medium text-muted-foreground">Ahorro Total</p>
           </div>
-          <p className="text-3xl font-bold text-accent">{formatCLP(stats.totalSavings)}</p>
+          <p className="text-3xl font-bold text-accent">{formatCLP(stats?.totalSavings || 0)}</p>
           <p className="text-xs text-muted-foreground">En los últimos 30 días</p>
         </Card>
 
@@ -60,7 +130,7 @@ export const Dashboard = () => {
             <Leaf className="h-5 w-5" />
             <p className="text-sm font-medium text-muted-foreground">Score Eco</p>
           </div>
-          <p className="text-3xl font-bold text-primary">{stats.avgEcoScore}/100</p>
+          <p className="text-3xl font-bold text-primary">{stats?.avgEcoScore || 50}/100</p>
           <p className="text-xs text-muted-foreground">Promedio de tus compras</p>
         </Card>
 
@@ -69,7 +139,7 @@ export const Dashboard = () => {
             <Users className="h-5 w-5" />
             <p className="text-sm font-medium text-muted-foreground">Score Social</p>
           </div>
-          <p className="text-3xl font-bold text-secondary">{stats.avgSocialScore}/100</p>
+          <p className="text-3xl font-bold text-secondary">{stats?.avgSocialScore || 50}/100</p>
           <p className="text-xs text-muted-foreground">Impacto social positivo</p>
         </Card>
 
@@ -78,7 +148,7 @@ export const Dashboard = () => {
             <ShoppingBag className="h-5 w-5" />
             <p className="text-sm font-medium text-muted-foreground">Listas Creadas</p>
           </div>
-          <p className="text-3xl font-bold text-foreground">{stats.listsCount}</p>
+          <p className="text-3xl font-bold text-foreground">{stats?.listsCount || 0}</p>
           <p className="text-xs text-muted-foreground">Total de listas</p>
         </Card>
       </div>
@@ -135,8 +205,8 @@ export const Dashboard = () => {
         </div>
         
         <div className="space-y-4">
-          <ScoreBar score={stats.avgEcoScore} label="Impacto Ambiental" type="eco" />
-          <ScoreBar score={stats.avgSocialScore} label="Impacto Social" type="social" />
+          <ScoreBar score={stats?.avgEcoScore || 50} label="Impacto Ambiental" type="eco" />
+          <ScoreBar score={stats?.avgSocialScore || 50} label="Impacto Social" type="social" />
         </div>
 
         <div className="grid gap-4 md:grid-cols-3 pt-4 border-t">
@@ -149,7 +219,7 @@ export const Dashboard = () => {
             <p className="text-sm text-muted-foreground">Productos locales elegidos</p>
           </div>
           <div className="space-y-1">
-            <p className="text-2xl font-bold text-accent">{formatCLP(stats.totalSavings)}</p>
+            <p className="text-2xl font-bold text-accent">{formatCLP(stats?.totalSavings || 0)}</p>
             <p className="text-sm text-muted-foreground">Ahorrado vs precio regular</p>
           </div>
         </div>
