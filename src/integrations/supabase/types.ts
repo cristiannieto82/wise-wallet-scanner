@@ -14,7 +14,261 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      alternatives: {
+        Row: {
+          alt_product_id: string
+          created_at: string
+          eco_delta: number
+          explanation: string | null
+          id: string
+          price_delta_clp: number
+          product_id: string
+          similarity: number
+          social_delta: number
+        }
+        Insert: {
+          alt_product_id: string
+          created_at?: string
+          eco_delta?: number
+          explanation?: string | null
+          id?: string
+          price_delta_clp?: number
+          product_id: string
+          similarity: number
+          social_delta?: number
+        }
+        Update: {
+          alt_product_id?: string
+          created_at?: string
+          eco_delta?: number
+          explanation?: string | null
+          id?: string
+          price_delta_clp?: number
+          product_id?: string
+          similarity?: number
+          social_delta?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "alternatives_alt_product_id_fkey"
+            columns: ["alt_product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "alternatives_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      price_snapshots: {
+        Row: {
+          captured_at: string
+          id: string
+          price_clp: number
+          product_id: string
+          store_id: string
+        }
+        Insert: {
+          captured_at?: string
+          id?: string
+          price_clp: number
+          product_id: string
+          store_id: string
+        }
+        Update: {
+          captured_at?: string
+          id?: string
+          price_clp?: number
+          product_id?: string
+          store_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "price_snapshots_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "price_snapshots_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      products: {
+        Row: {
+          barcode: string
+          brand: string
+          carbon_gco2e: number | null
+          category: string
+          created_at: string
+          eco_score: number
+          id: string
+          image_url: string | null
+          labels: Json | null
+          last_seen_price_clp: number
+          last_vendor: string | null
+          name: string
+          nutrients: Json | null
+          social_score: number
+          updated_at: string
+        }
+        Insert: {
+          barcode: string
+          brand: string
+          carbon_gco2e?: number | null
+          category: string
+          created_at?: string
+          eco_score?: number
+          id?: string
+          image_url?: string | null
+          labels?: Json | null
+          last_seen_price_clp?: number
+          last_vendor?: string | null
+          name: string
+          nutrients?: Json | null
+          social_score?: number
+          updated_at?: string
+        }
+        Update: {
+          barcode?: string
+          brand?: string
+          carbon_gco2e?: number | null
+          category?: string
+          created_at?: string
+          eco_score?: number
+          id?: string
+          image_url?: string | null
+          labels?: Json | null
+          last_seen_price_clp?: number
+          last_vendor?: string | null
+          name?: string
+          nutrients?: Json | null
+          social_score?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      shopping_list_items: {
+        Row: {
+          chosen_price_clp: number | null
+          created_at: string
+          id: string
+          list_id: string
+          locked: boolean
+          product_id: string
+          quantity: number
+          vendor: string | null
+        }
+        Insert: {
+          chosen_price_clp?: number | null
+          created_at?: string
+          id?: string
+          list_id: string
+          locked?: boolean
+          product_id: string
+          quantity?: number
+          vendor?: string | null
+        }
+        Update: {
+          chosen_price_clp?: number | null
+          created_at?: string
+          id?: string
+          list_id?: string
+          locked?: boolean
+          product_id?: string
+          quantity?: number
+          vendor?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "shopping_list_items_list_id_fkey"
+            columns: ["list_id"]
+            isOneToOne: false
+            referencedRelation: "shopping_lists"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "shopping_list_items_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      shopping_lists: {
+        Row: {
+          budget_clp: number
+          created_at: string
+          id: string
+          title: string
+          updated_at: string
+          user_id: string | null
+          user_location_lat: number | null
+          user_location_lon: number | null
+        }
+        Insert: {
+          budget_clp?: number
+          created_at?: string
+          id?: string
+          title: string
+          updated_at?: string
+          user_id?: string | null
+          user_location_lat?: number | null
+          user_location_lon?: number | null
+        }
+        Update: {
+          budget_clp?: number
+          created_at?: string
+          id?: string
+          title?: string
+          updated_at?: string
+          user_id?: string | null
+          user_location_lat?: number | null
+          user_location_lon?: number | null
+        }
+        Relationships: []
+      }
+      stores: {
+        Row: {
+          address: string
+          created_at: string
+          id: string
+          lat: number
+          lon: number
+          name: string
+          vendor_code: string
+        }
+        Insert: {
+          address: string
+          created_at?: string
+          id?: string
+          lat: number
+          lon: number
+          name: string
+          vendor_code: string
+        }
+        Update: {
+          address?: string
+          created_at?: string
+          id?: string
+          lat?: number
+          lon?: number
+          name?: string
+          vendor_code?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
