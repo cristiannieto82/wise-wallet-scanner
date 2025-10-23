@@ -118,7 +118,7 @@ export type Database = {
           last_seen_price_clp: number
           last_vendor: string | null
           name: string
-          nutrients: Json | null
+          product_info: Json | null
           social_score: number
           updated_at: string
         }
@@ -135,7 +135,7 @@ export type Database = {
           last_seen_price_clp?: number
           last_vendor?: string | null
           name: string
-          nutrients?: Json | null
+          product_info?: Json | null
           social_score?: number
           updated_at?: string
         }
@@ -152,7 +152,7 @@ export type Database = {
           last_seen_price_clp?: number
           last_vendor?: string | null
           name?: string
-          nutrients?: Json | null
+          product_info?: Json | null
           social_score?: number
           updated_at?: string
         }

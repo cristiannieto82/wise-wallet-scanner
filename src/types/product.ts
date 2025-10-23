@@ -1,14 +1,25 @@
-export interface NutrientInfo {
-  energy_kcal?: number;
-  proteins_g?: number;
-  carbohydrates_g?: number;
-  sugars_g?: number;
-  fat_g?: number;
-  saturated_fat_g?: number;
-  fiber_g?: number;
-  sodium_mg?: number;
-  salt_g?: number;
-  calcium_mg?: number;
+export interface ProductInfo {
+  // Información de envase
+  package_type?: string; // "plástico", "vidrio", "cartón", "biodegradable"
+  package_recyclable?: boolean;
+  package_size_ml?: number;
+  package_size_g?: number;
+  
+  // Información de uso
+  doses_per_package?: number;
+  concentration?: string; // "normal", "concentrado", "ultra-concentrado"
+  
+  // Información química/ingredientes
+  biodegradable?: boolean;
+  chlorine_free?: boolean;
+  paraben_free?: boolean;
+  fragrance_free?: boolean;
+  vegan?: boolean;
+  cruelty_free?: boolean;
+  phosphate_free?: boolean;
+  
+  // Certificaciones
+  certifications?: string[]; // "Ecocert", "Leaping Bunny", etc.
 }
 
 export interface Product {
@@ -17,14 +28,14 @@ export interface Product {
   name: string;
   brand: string;
   category: string;
-  nutrients: NutrientInfo;
+  product_info: ProductInfo;
   labels: string[];
-  eco_score: number; // 0-100
-  social_score: number; // 0-100
+  eco_score: number; // 0-100 basado en envase, biodegradabilidad, químicos
+  social_score: number; // 0-100 basado en certificaciones éticas
   image_url?: string;
   last_seen_price_clp: number;
   last_vendor: string;
-  carbon_gco2e?: number;
+  carbon_gco2e?: number; // Huella de carbono del envío/transporte
   created_at: string;
   updated_at: string;
 }

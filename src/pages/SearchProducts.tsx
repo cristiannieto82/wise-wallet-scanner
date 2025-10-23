@@ -79,9 +79,9 @@ export const SearchProducts = () => {
   return (
     <div className="container py-8 space-y-8">
       <div className="space-y-2">
-        <h1 className="text-3xl font-bold text-foreground">Buscar Productos</h1>
+        <h1 className="text-3xl font-bold text-foreground">Buscar Productos Sostenibles</h1>
         <p className="text-muted-foreground">
-          Encuentra productos por nombre, marca o código de barras
+          Encuentra productos de limpieza y autocuidado con información detallada de sostenibilidad
         </p>
       </div>
 
@@ -175,8 +175,8 @@ export const SearchProducts = () => {
           <div className="space-y-2">
             <h3 className="text-lg font-semibold text-foreground">Busca productos sostenibles</h3>
             <p className="text-muted-foreground max-w-md mx-auto">
-              Usa el buscador o escanea códigos de barras para encontrar información detallada
-              sobre productos y alternativas más sostenibles
+              Descubre productos de limpieza y autocuidado con menor impacto ambiental,
+              certificaciones éticas y mejor relación costo-beneficio
             </p>
           </div>
         </div>
