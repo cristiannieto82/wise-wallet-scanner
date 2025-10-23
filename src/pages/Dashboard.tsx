@@ -1,12 +1,12 @@
-import { Card } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { formatCLP } from '@/lib/formatters';
-import { ArrowRight, TrendingDown, Leaf, Users, ShoppingBag, ListChecks, GitCompare } from 'lucide-react';
-import { Link, useNavigate } from 'react-router-dom';
-import { ScoreBar } from '@/components/ScoreBar';
-import { useQuery } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
-import { useEffect } from 'react';
+import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { formatCLP } from "@/lib/formatters";
+import { ArrowRight, TrendingDown, Leaf, Users, ShoppingBag, ListChecks, GitCompare } from "lucide-react";
+import { Link, useNavigate } from "react-router-dom";
+import { ScoreBar } from "@/components/ScoreBar";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+import { useEffect } from "react";
 
 export const Dashboard = () => {
   const navigate = useNavigate();
@@ -14,42 +14,47 @@ export const Dashboard = () => {
   useEffect(() => {
     supabase.auth.getUser().then(({ data: { user } }) => {
       if (!user) {
-        navigate('/auth');
+        navigate("/auth");
       }
     });
   }, [navigate]);
 
   const { data: stats } = useQuery({
-    queryKey: ['dashboard-stats'],
+    queryKey: ["dashboard-stats"],
     queryFn: async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+
       if (!user) {
         return {
           totalSavings: 0,
           avgEcoScore: 50,
           avgSocialScore: 50,
-          listsCount: 0
+          listsCount: 0,
         };
       }
 
       const { data: lists } = await supabase
-        .from('shopping_lists')
-        .select(`
+        .from("shopping_lists")
+        .select(
+          `
           *,
           shopping_list_items(
             quantity,
             products(*)
           )
-        `)
-        .eq('user_id', user.id);
+        `,
+        )
+        .eq("user_id", user.id);
 
-      if (!lists) return {
-        totalSavings: 0,
-        avgEcoScore: 50,
-        avgSocialScore: 50,
-        listsCount: 0
-      };
+      if (!lists)
+        return {
+          totalSavings: 0,
+          avgEcoScore: 50,
+          avgSocialScore: 50,
+          listsCount: 0,
+        };
 
       let totalEco = 0;
       let totalSocial = 0;
@@ -64,14 +69,15 @@ export const Dashboard = () => {
             productCount++;
           }
         });
-        
-        const listTotal = list.shopping_list_items?.reduce(
-          (sum: number, item: any) => sum + (item.products?.last_seen_price_clp || 0) * item.quantity,
-          0
-        ) || 0;
-        
+
+        const listTotal =
+          list.shopping_list_items?.reduce(
+            (sum: number, item: any) => sum + (item.products?.last_seen_price_clp || 0) * item.quantity,
+            0,
+          ) || 0;
+
         if (listTotal < list.budget_clp) {
-          totalSavings += (list.budget_clp - listTotal);
+          totalSavings += list.budget_clp - listTotal;
         }
       });
 
@@ -79,9 +85,9 @@ export const Dashboard = () => {
         totalSavings,
         avgEcoScore: productCount > 0 ? Math.round(totalEco / productCount) : 50,
         avgSocialScore: productCount > 0 ? Math.round(totalSocial / productCount) : 50,
-        listsCount: lists.length
+        listsCount: lists.length,
       };
-    }
+    },
   });
 
   return (
@@ -91,8 +97,7 @@ export const Dashboard = () => {
         <div className="relative z-10 max-w-2xl space-y-4">
           <h1 className="text-4xl font-bold">¡Bienvenido a LiquiVerde!</h1>
           <p className="text-lg text-white/90">
-            Ahorra dinero y cuida el planeta con cada compra. Optimiza tu lista de compras con
-            inteligencia sostenible.
+            Ahorra dinero y cuida el planeta con cada compra. Optimiza tu lista de compras con inteligencia sostenible.
           </p>
           <div className="flex flex-wrap gap-3">
             <Button asChild size="lg" variant="secondary">
@@ -101,7 +106,7 @@ export const Dashboard = () => {
                 Comenzar a comprar
               </Link>
             </Button>
-            <Button asChild size="lg" variant="outline" className="border-white text-white hover:bg-white/20">
+            <Button asChild size="lg" variant="outline" className="border-white text-white">
               <Link to="/lists">
                 Ver mis listas
                 <ArrowRight className="ml-2 h-5 w-5" />
@@ -163,9 +168,7 @@ export const Dashboard = () => {
                 <ShoppingBag className="h-6 w-6" />
               </div>
               <h3 className="font-semibold text-foreground">Buscar Productos</h3>
-              <p className="text-sm text-muted-foreground">
-                Encuentra productos por código de barras o nombre
-              </p>
+              <p className="text-sm text-muted-foreground">Encuentra productos por código de barras o nombre</p>
             </Link>
           </Card>
 
@@ -175,9 +178,7 @@ export const Dashboard = () => {
                 <ListChecks className="h-6 w-6" />
               </div>
               <h3 className="font-semibold text-foreground">Optimizar Lista</h3>
-              <p className="text-sm text-muted-foreground">
-                Crea y optimiza tu lista de compras con IA
-              </p>
+              <p className="text-sm text-muted-foreground">Crea y optimiza tu lista de compras con IA</p>
             </Link>
           </Card>
 
@@ -187,9 +188,7 @@ export const Dashboard = () => {
                 <GitCompare className="h-6 w-6" />
               </div>
               <h3 className="font-semibold text-foreground">Comparar Alternativas</h3>
-              <p className="text-sm text-muted-foreground">
-                Encuentra mejores opciones para tus productos
-              </p>
+              <p className="text-sm text-muted-foreground">Encuentra mejores opciones para tus productos</p>
             </Link>
           </Card>
         </div>
@@ -203,7 +202,7 @@ export const Dashboard = () => {
             Cada decisión cuenta. Aquí está el resumen de tu contribución sostenible.
           </p>
         </div>
-        
+
         <div className="space-y-4">
           <ScoreBar score={stats?.avgEcoScore || 50} label="Impacto Ambiental" type="eco" />
           <ScoreBar score={stats?.avgSocialScore || 50} label="Impacto Social" type="social" />
