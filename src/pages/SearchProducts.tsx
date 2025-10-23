@@ -1,67 +1,80 @@
 import { useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Search, ScanBarcode } from 'lucide-react';
 import { ProductCard } from '@/components/ProductCard';
-import { searchProducts, getCategories } from '@/lib/mock-data';
 import { Product } from '@/types/product';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 
 export const SearchProducts = () => {
   const [query, setQuery] = useState('');
-  const [category, setCategory] = useState<string>('');
+  const [category, setCategory] = useState<string>('all');
   const [barcode, setBarcode] = useState('');
-  const [results, setResults] = useState<Product[]>([]);
-  const [isSearching, setIsSearching] = useState(false);
-  const { toast } = useToast();
+  const [searchTrigger, setSearchTrigger] = useState(0);
+
+  const { data: categories = [] } = useQuery({
+    queryKey: ['categories'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('products')
+        .select('category')
+        .order('category');
+      
+      if (error) throw error;
+      
+      const uniqueCategories = [...new Set(data.map(p => p.category))];
+      return uniqueCategories;
+    },
+  });
+
+  const { data: results = [], isLoading } = useQuery({
+    queryKey: ['products-search', query, category, barcode, searchTrigger],
+    queryFn: async () => {
+      let queryBuilder = supabase.from('products').select('*');
+
+      if (barcode.trim()) {
+        queryBuilder = queryBuilder.eq('barcode', barcode.trim());
+      } else if (query.trim()) {
+        queryBuilder = queryBuilder.ilike('name', `%${query}%`);
+        
+        if (category && category !== 'all') {
+          queryBuilder = queryBuilder.eq('category', category);
+        }
+      } else {
+        return [];
+      }
+
+      const { data, error } = await queryBuilder.limit(20);
+      
+      if (error) throw error;
+      return data as Product[];
+    },
+    enabled: searchTrigger > 0,
+  });
 
   const handleSearch = () => {
-    setIsSearching(true);
-    // Simulate API delay
-    setTimeout(() => {
-      const searchResults = searchProducts(query, category || undefined);
-      setResults(searchResults);
-      setIsSearching(false);
-      
-      if (searchResults.length === 0) {
-        toast({
-          title: 'Sin resultados',
-          description: 'No se encontraron productos con esos criterios',
-          variant: 'destructive',
-        });
-      }
-    }, 500);
+    if (!query.trim() && !barcode.trim()) {
+      toast.error('Ingresa un término de búsqueda');
+      return;
+    }
+    setSearchTrigger(prev => prev + 1);
   };
 
   const handleBarcodeSearch = () => {
-    if (!barcode.trim()) return;
-    
-    setIsSearching(true);
-    setTimeout(() => {
-      const searchResults = searchProducts(barcode);
-      setResults(searchResults);
-      setIsSearching(false);
-      
-      if (searchResults.length === 0) {
-        toast({
-          title: 'Código no encontrado',
-          description: 'El código de barras no está en nuestra base de datos',
-          variant: 'destructive',
-        });
-      }
-    }, 500);
+    if (!barcode.trim()) {
+      toast.error('Ingresa un código de barras');
+      return;
+    }
+    setQuery('');
+    setSearchTrigger(prev => prev + 1);
   };
 
   const handleAddToList = (product: Product) => {
-    // En producción, esto agregaría al carrito/lista activa
-    toast({
-      title: 'Producto agregado',
-      description: `${product.name} fue agregado a tu lista`,
-    });
+    toast.success(`${product.name} agregado a tu lista`);
   };
-
-  const categories = getCategories();
 
   return (
     <div className="container py-8 space-y-8">
@@ -85,7 +98,7 @@ export const SearchProducts = () => {
             onChange={(e) => setBarcode(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && handleBarcodeSearch()}
           />
-          <Button onClick={handleBarcodeSearch} disabled={isSearching}>
+          <Button onClick={handleBarcodeSearch} disabled={isLoading}>
             <ScanBarcode className="h-4 w-4 mr-2" />
             Buscar
           </Button>
@@ -124,7 +137,7 @@ export const SearchProducts = () => {
             </SelectContent>
           </Select>
 
-          <Button onClick={handleSearch} disabled={isSearching}>
+          <Button onClick={handleSearch} disabled={isLoading}>
             <Search className="h-4 w-4 mr-2" />
             Buscar
           </Button>
@@ -152,7 +165,7 @@ export const SearchProducts = () => {
         </div>
       )}
 
-      {!isSearching && results.length === 0 && (
+      {!isLoading && results.length === 0 && searchTrigger === 0 && (
         <div className="text-center py-12 space-y-4">
           <div className="flex justify-center">
             <div className="flex h-20 w-20 items-center justify-center rounded-full bg-muted">

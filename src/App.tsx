@@ -9,6 +9,7 @@ import { SearchProducts } from "@/pages/SearchProducts";
 import { ShoppingLists } from "@/pages/ShoppingLists";
 import { ListDetail } from "@/pages/ListDetail";
 import { Compare } from "@/pages/Compare";
+import { Optimize } from "@/pages/Optimize";
 import { Auth } from "@/pages/Auth";
 import NotFound from "./pages/NotFound";
 
@@ -27,6 +28,7 @@ const App = () => (
             <Route path="/search" element={<SearchProducts />} />
             <Route path="/lists" element={<ShoppingLists />} />
             <Route path="/lists/:listId" element={<ListDetail />} />
+            <Route path="/optimize/:listId" element={<Optimize />} />
             <Route path="/compare" element={<Compare />} />
             <Route path="/auth" element={<Auth />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
