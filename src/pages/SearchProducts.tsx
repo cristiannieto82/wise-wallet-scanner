@@ -13,7 +13,6 @@ export const SearchProducts = () => {
   const [query, setQuery] = useState('');
   const [category, setCategory] = useState<string>('all');
   const [barcode, setBarcode] = useState('');
-  const [searchTrigger, setSearchTrigger] = useState(0);
 
   const { data: categories = [] } = useQuery({
     queryKey: ['categories'],
@@ -31,37 +30,30 @@ export const SearchProducts = () => {
   });
 
   const { data: results = [], isLoading } = useQuery({
-    queryKey: ['products-search', query, category, barcode, searchTrigger],
+    queryKey: ['products-search', query, category, barcode],
     queryFn: async () => {
       let queryBuilder = supabase.from('products').select('*');
 
       if (barcode.trim()) {
         queryBuilder = queryBuilder.eq('barcode', barcode.trim());
-      } else if (query.trim()) {
-        queryBuilder = queryBuilder.ilike('name', `%${query}%`);
+      } else {
+        // Apply text filter if present
+        if (query.trim()) {
+          queryBuilder = queryBuilder.ilike('name', `%${query}%`);
+        }
         
+        // Apply category filter if not "all"
         if (category && category !== 'all') {
           queryBuilder = queryBuilder.eq('category', category);
         }
-      } else {
-        return [];
       }
 
-      const { data, error } = await queryBuilder.limit(20);
+      const { data, error } = await queryBuilder.limit(50);
       
       if (error) throw error;
       return data as Product[];
     },
-    enabled: searchTrigger > 0,
   });
-
-  const handleSearch = () => {
-    if (!query.trim() && !barcode.trim()) {
-      toast.error('Ingresa un término de búsqueda');
-      return;
-    }
-    setSearchTrigger(prev => prev + 1);
-  };
 
   const handleBarcodeSearch = () => {
     if (!barcode.trim()) {
@@ -69,7 +61,6 @@ export const SearchProducts = () => {
       return;
     }
     setQuery('');
-    setSearchTrigger(prev => prev + 1);
   };
 
   const handleAddToList = (product: Product) => {
@@ -120,7 +111,6 @@ export const SearchProducts = () => {
             placeholder="Buscar por nombre o marca..."
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
           />
           
           <Select value={category} onValueChange={setCategory}>
@@ -136,11 +126,6 @@ export const SearchProducts = () => {
               ))}
             </SelectContent>
           </Select>
-
-          <Button onClick={handleSearch} disabled={isLoading}>
-            <Search className="h-4 w-4 mr-2" />
-            Buscar
-          </Button>
         </div>
       </div>
 
@@ -149,7 +134,12 @@ export const SearchProducts = () => {
         <div className="space-y-4">
           <div className="flex items-center justify-between">
             <h2 className="text-xl font-semibold text-foreground">
-              Resultados ({results.length})
+              {barcode.trim() 
+                ? `Resultados para código: ${barcode} (${results.length})`
+                : query.trim()
+                ? `Mostrando resultados para: "${query}" (${results.length})`
+                : `Mostrando todos los productos sostenibles (${results.length})`
+              }
             </h2>
           </div>
           
@@ -165,7 +155,7 @@ export const SearchProducts = () => {
         </div>
       )}
 
-      {!isLoading && results.length === 0 && searchTrigger === 0 && (
+      {!isLoading && results.length === 0 && (
         <div className="text-center py-12 space-y-4">
           <div className="flex justify-center">
             <div className="flex h-20 w-20 items-center justify-center rounded-full bg-muted">
@@ -173,10 +163,9 @@ export const SearchProducts = () => {
             </div>
           </div>
           <div className="space-y-2">
-            <h3 className="text-lg font-semibold text-foreground">Busca productos sostenibles</h3>
+            <h3 className="text-lg font-semibold text-foreground">No se encontraron productos</h3>
             <p className="text-muted-foreground max-w-md mx-auto">
-              Descubre productos de limpieza y autocuidado con menor impacto ambiental,
-              certificaciones éticas y mejor relación costo-beneficio
+              Intenta con otros términos de búsqueda o selecciona una categoría diferente
             </p>
           </div>
         </div>
