@@ -106,7 +106,7 @@ export const Dashboard = () => {
                 Comenzar a comprar
               </Link>
             </Button>
-            <Button asChild size="lg" variant="outline" className="border-white text-white">
+            <Button asChild size="lg" className="bg-green-600 text-white hover:bg-green-700">
               <Link to="/lists">
                 Ver mis listas
                 <ArrowRight className="ml-2 h-5 w-5" />
