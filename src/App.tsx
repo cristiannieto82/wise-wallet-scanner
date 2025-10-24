@@ -1,9 +1,9 @@
-import React, { useState } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { useState } from "react";
 import { Navigation } from "@/components/Navigation";
 import { Dashboard } from "@/pages/Dashboard";
 import { SearchProducts } from "@/pages/SearchProducts";
@@ -20,7 +20,7 @@ import { ChatPanel } from "@/components/chat/ChatPanel";
 
 const queryClient = new QueryClient();
 
-const App: React.FC = () => {
+const App = () => {
   const [chatOpen, setChatOpen] = useState(false);
 
   return (
@@ -41,9 +41,11 @@ const App: React.FC = () => {
               <Route path="/stores" element={<StoreMap />} />
               <Route path="/admin" element={<Admin />} />
               <Route path="/auth" element={<Auth />} />
+              {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
             </Routes>
             
+            {/* Chatbot Asesor Verde */}
             <FloatingChatButton onClick={() => setChatOpen(true)} />
             <ChatPanel open={chatOpen} onOpenChange={setChatOpen} />
           </div>
