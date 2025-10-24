@@ -7,7 +7,7 @@
 
 > **Aplicación web fullstack que optimiza tus compras considerando precio, impacto ambiental y responsabilidad social mediante algoritmos de optimización multi-objetivo.**
 
-**Demo en vivo**: [LiquiVerde App](https://d6ad5eec-392f-41a1-a544-06df83de3994.lovableproject.com)
+**Demo en vivo**: [LiquiVerde App](https://liquiverde.lovable.app)
 
 ## Características Principales
 
