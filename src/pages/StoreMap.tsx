@@ -164,6 +164,7 @@ export const StoreMap = () => {
               center={userLocation}
               zoom={13}
               style={{ height: '100%', width: '100%' }}
+              scrollWheelZoom={true}
             >
               <TileLayer
                 attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
@@ -172,7 +173,6 @@ export const StoreMap = () => {
               
               <MapUpdater center={userLocation} />
 
-              {/* User location marker */}
               <Marker position={userLocation}>
                 <Popup>
                   <div className="text-center">
@@ -182,14 +182,12 @@ export const StoreMap = () => {
                 </Popup>
               </Marker>
 
-              {/* Search radius circle */}
               <Circle
                 center={userLocation}
                 radius={searchRadius}
                 pathOptions={{ color: 'blue', fillColor: 'blue', fillOpacity: 0.1 }}
               />
 
-              {/* Store markers */}
               {uniqueStores.map((store, index) => (
                 <Marker
                   key={`${store.lat}-${store.lon}-${index}`}

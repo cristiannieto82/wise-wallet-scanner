@@ -16,7 +16,8 @@ serve(async (req) => {
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    const { lat, lon, radius = 5000 } = await req.json();
+    const body = await req.json();
+    const { lat, lon, radius = 5000, saveToDb = false } = body;
 
     if (!lat || !lon) {
       throw new Error('Latitude and longitude are required');
@@ -80,7 +81,6 @@ serve(async (req) => {
       .sort((a: any, b: any) => a.distance - b.distance);
 
     // Optionally save to database
-    const { saveToDb } = await req.json();
     if (saveToDb) {
       for (const store of stores) {
         // Check if store already exists
