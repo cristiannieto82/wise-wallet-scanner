@@ -1,14 +1,13 @@
 import { useState, useEffect } from 'react';
-import { MapContainer } from 'react-leaflet';
+import { MapContainer, TileLayer, Marker, Popup, Circle } from 'react-leaflet';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
-import { Navigation, Store, Loader2 } from 'lucide-react';
+import { MapPin, Navigation, Store, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
-import { StoreMapView } from '@/components/StoreMapView';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
 
@@ -39,6 +38,7 @@ export const StoreMap = () => {
   const [userLocation, setUserLocation] = useState<[number, number] | null>(null);
   const [searchRadius, setSearchRadius] = useState(5000); // 5km default
   const [isLocating, setIsLocating] = useState(false);
+  const [mapKey, setMapKey] = useState(0);
 
   // Get user's current location
   const getUserLocation = () => {
@@ -51,6 +51,7 @@ export const StoreMap = () => {
             position.coords.longitude,
           ];
           setUserLocation(location);
+          setMapKey(prev => prev + 1); // Force map recreation
           setIsLocating(false);
           toast.success('Ubicación detectada');
         },
@@ -58,12 +59,14 @@ export const StoreMap = () => {
           console.error('Error getting location:', error);
           // Default to Santiago, Chile
           setUserLocation([-33.4489, -70.6693]);
+          setMapKey(prev => prev + 1);
           setIsLocating(false);
           toast.error('No se pudo detectar tu ubicación. Mostrando Santiago, Chile.');
         }
       );
     } else {
       setUserLocation([-33.4489, -70.6693]);
+      setMapKey(prev => prev + 1);
       setIsLocating(false);
       toast.error('Geolocalización no disponible');
     }
@@ -154,17 +157,60 @@ export const StoreMap = () => {
         <div className="lg:col-span-2">
           <Card className="overflow-hidden h-[600px]">
             <MapContainer
+              key={mapKey}
               center={userLocation}
               zoom={13}
               style={{ height: '100%', width: '100%' }}
               scrollWheelZoom={true}
             >
-              <StoreMapView
-                userLocation={userLocation}
-                searchRadius={searchRadius}
-                stores={uniqueStores}
-                getVendorColor={getVendorColor}
+              <TileLayer
+                attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+                url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
               />
+
+              <Marker position={userLocation}>
+                <Popup>
+                  <div className="text-center">
+                    <MapPin className="h-6 w-6 mx-auto mb-2 text-primary" />
+                    <p className="font-semibold">Tu ubicación</p>
+                  </div>
+                </Popup>
+              </Marker>
+
+              <Circle
+                center={userLocation}
+                radius={searchRadius}
+                pathOptions={{ color: 'blue', fillColor: 'blue', fillOpacity: 0.1 }}
+              />
+
+              {uniqueStores.map((store, index) => (
+                <Marker
+                  key={`store-${store.lat}-${store.lon}-${index}`}
+                  position={[store.lat, store.lon]}
+                  icon={L.divIcon({
+                    className: 'custom-marker',
+                    html: `<div style="background-color: ${getVendorColor(store.vendor_code)}; width: 30px; height: 30px; border-radius: 50%; border: 3px solid white; box-shadow: 0 2px 4px rgba(0,0,0,0.3);"></div>`,
+                    iconSize: [30, 30],
+                    iconAnchor: [15, 15],
+                  })}
+                >
+                  <Popup>
+                    <div className="text-center min-w-[200px]">
+                      <Store className="h-6 w-6 mx-auto mb-2" style={{ color: getVendorColor(store.vendor_code) }} />
+                      <p className="font-semibold text-base mb-1">{store.name}</p>
+                      <p className="text-xs text-muted-foreground mb-2">{store.address}</p>
+                      <Badge style={{ backgroundColor: getVendorColor(store.vendor_code) }}>
+                        {store.vendor_code}
+                      </Badge>
+                      {store.distance && (
+                        <p className="text-xs mt-2">
+                          {(store.distance / 1000).toFixed(1)} km de distancia
+                        </p>
+                      )}
+                    </div>
+                  </Popup>
+                </Marker>
+              ))}
             </MapContainer>
           </Card>
         </div>
@@ -238,7 +284,7 @@ export const StoreMap = () => {
                   .sort((a, b) => (a.distance || 0) - (b.distance || 0))
                   .map((store, index) => (
                     <div
-                      key={`${store.lat}-${store.lon}-${index}`}
+                      key={`list-${store.lat}-${store.lon}-${index}`}
                       className="p-3 bg-muted rounded-lg"
                     >
                       <div className="flex items-start justify-between mb-2">
