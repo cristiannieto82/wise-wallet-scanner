@@ -50,3 +50,25 @@ export const formatCarbon = (gco2e?: number): string => {
   }
   return `${gco2e.toFixed(0)} g CO₂e`;
 };
+
+/**
+ * Format distance in meters or kilometers
+ */
+export const formatDistance = (meters: number): string => {
+  if (meters >= 1000) {
+    return `${(meters / 1000).toFixed(1)} km`;
+  }
+  return `${meters.toFixed(0)} m`;
+};
+
+/**
+ * Format duration in seconds to minutes or hours
+ */
+export const formatDuration = (seconds: number): string => {
+  if (seconds >= 3600) {
+    const hours = Math.floor(seconds / 3600);
+    const minutes = Math.round((seconds % 3600) / 60);
+    return `${hours}h ${minutes}min`;
+  }
+  return `${Math.round(seconds / 60)} min`;
+};

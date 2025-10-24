@@ -11,6 +11,7 @@ interface LeafletMapWrapperProps {
 export interface LeafletMapHandle {
   addMarker: (lat: number, lon: number, options?: L.MarkerOptions) => L.Marker;
   addCircle: (lat: number, lon: number, radius: number, options?: L.CircleMarkerOptions) => L.Circle;
+  addPolyline: (coordinates: [number, number][], options?: L.PolylineOptions) => L.Polyline;
   clearLayers: () => void;
   setView: (center: [number, number], zoom: number) => void;
   getMap: () => L.Map | null;
@@ -73,6 +74,14 @@ export const LeafletMapWrapper = forwardRef<LeafletMapHandle, LeafletMapWrapperP
           layersRef.current.push(circle);
         }
         return circle;
+      },
+      addPolyline: (coordinates: [number, number][], options?: L.PolylineOptions) => {
+        const polyline = L.polyline(coordinates, options);
+        if (mapInstanceRef.current) {
+          polyline.addTo(mapInstanceRef.current);
+          layersRef.current.push(polyline);
+        }
+        return polyline;
       },
       clearLayers: () => {
         layersRef.current.forEach((layer) => {

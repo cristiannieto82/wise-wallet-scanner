@@ -37,6 +37,8 @@ export const StoreMap = () => {
   const [userLocation, setUserLocation] = useState<[number, number] | null>(null);
   const [searchRadius, setSearchRadius] = useState(5000); // 5km default
   const [isLocating, setIsLocating] = useState(false);
+  const [selectedStore, setSelectedStore] = useState<StoreData | null>(null);
+  const [isCalculatingRoute, setIsCalculatingRoute] = useState(false);
   const mapRef = useRef<LeafletMapHandle>(null);
 
   // Get user's current location
@@ -123,6 +125,103 @@ export const StoreMap = () => {
       OTHER: '#6b7280',
     };
     return colors[vendorCode] || colors.OTHER;
+  };
+
+  // Calculate and display route to a store
+  const showRouteToStore = async (store: StoreData) => {
+    if (!userLocation || !mapRef.current) return;
+
+    setIsCalculatingRoute(true);
+    setSelectedStore(store);
+
+    try {
+      const { data, error } = await supabase.functions.invoke('calculate-route', {
+        body: {
+          fromLat: userLocation[0],
+          fromLon: userLocation[1],
+          toLat: store.lat,
+          toLon: store.lon,
+        },
+      });
+
+      if (error) throw error;
+
+      // Clear previous route
+      mapRef.current.clearLayers();
+
+      // Re-add user marker
+      const userMarker = mapRef.current.addMarker(userLocation[0], userLocation[1]);
+      userMarker.bindPopup(`
+        <div style="text-align: center;">
+          <div style="font-size: 24px; margin-bottom: 8px;">📍</div>
+          <p style="font-weight: 600; margin: 0;">Tu ubicación</p>
+        </div>
+      `);
+
+      // Re-add search radius
+      mapRef.current.addCircle(userLocation[0], userLocation[1], searchRadius, {
+        color: 'blue',
+        fillColor: 'blue',
+        fillOpacity: 0.1,
+        weight: 2,
+      });
+
+      // Add route polyline
+      if (data.polyline) {
+        // Convert [lon, lat] to [lat, lon] for Leaflet
+        const latLngCoords: [number, number][] = data.polyline.map((coord: [number, number]) => [coord[1], coord[0]]);
+        
+        mapRef.current.addPolyline(latLngCoords, {
+          color: getVendorColor(store.vendor_code),
+          weight: 4,
+          opacity: 0.7,
+        });
+      }
+
+      // Re-add all store markers
+      uniqueStores.forEach((s) => {
+        const customIcon = L.divIcon({
+          className: 'custom-marker',
+          html: `<div style="background-color: ${getVendorColor(s.vendor_code)}; width: 30px; height: 30px; border-radius: 50%; border: 3px solid white; box-shadow: 0 2px 4px rgba(0,0,0,0.3);"></div>`,
+          iconSize: [30, 30],
+          iconAnchor: [15, 15],
+        });
+
+        const marker = mapRef.current!.addMarker(s.lat, s.lon, { icon: customIcon });
+        
+        const isSelected = s.lat === store.lat && s.lon === store.lon;
+        const popupContent = `
+          <div style="text-align: center; min-width: 200px;">
+            <div style="font-size: 24px; color: ${getVendorColor(s.vendor_code)}; margin-bottom: 8px;">🏪</div>
+            <p style="font-weight: 600; font-size: 14px; margin-bottom: 4px;">${s.name}</p>
+            <p style="font-size: 12px; color: #666; margin-bottom: 8px;">${s.address}</p>
+            <span style="background-color: ${getVendorColor(s.vendor_code)}; color: white; padding: 2px 8px; border-radius: 4px; font-size: 11px;">
+              ${s.vendor_code}
+            </span>
+            ${s.distance ? `<p style="font-size: 12px; margin-top: 8px; margin-bottom: 0;">📍 ${(s.distance / 1000).toFixed(1)} km</p>` : ''}
+            ${isSelected && data.distance ? `
+              <p style="font-size: 12px; margin-top: 4px; margin-bottom: 0; color: ${getVendorColor(s.vendor_code)};">
+                🚗 ${(data.distance / 1000).toFixed(1)} km • ⏱️ ${Math.round(data.duration / 60)} min
+              </p>
+            ` : ''}
+          </div>
+        `;
+        
+        marker.bindPopup(popupContent);
+        
+        // Open popup for selected store
+        if (isSelected) {
+          marker.openPopup();
+        }
+      });
+
+      toast.success(`Ruta calculada: ${(data.distance / 1000).toFixed(1)} km, ${Math.round(data.duration / 60)} min`);
+    } catch (error) {
+      console.error('Error calculating route:', error);
+      toast.error('No se pudo calcular la ruta');
+    } finally {
+      setIsCalculatingRoute(false);
+    }
   };
 
   // Update markers when stores or user location changes
@@ -284,7 +383,8 @@ export const StoreMap = () => {
                   .map((store, index) => (
                     <div
                       key={`list-${store.lat}-${store.lon}-${index}`}
-                      className="p-3 bg-muted rounded-lg"
+                      className="p-3 bg-muted rounded-lg cursor-pointer hover:bg-muted/70 transition-colors"
+                      onClick={() => showRouteToStore(store)}
                     >
                       <div className="flex items-start justify-between mb-2">
                         <p className="font-semibold text-sm">{store.name}</p>
@@ -304,6 +404,12 @@ export const StoreMap = () => {
                         <p className="text-xs font-medium text-primary">
                           📍 {(store.distance / 1000).toFixed(1)} km
                         </p>
+                      )}
+                      {selectedStore?.lat === store.lat && selectedStore?.lon === store.lon && isCalculatingRoute && (
+                        <div className="flex items-center gap-1 mt-2 text-xs text-muted-foreground">
+                          <Loader2 className="h-3 w-3 animate-spin" />
+                          Calculando ruta...
+                        </div>
                       )}
                     </div>
                   ))}
