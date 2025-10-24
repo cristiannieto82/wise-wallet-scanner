@@ -6,6 +6,14 @@
     <title>LiquiVerde - Compras Inteligentes y Sostenibles</title>
     <meta name="description" content="Ahorra dinero y cuida el planeta. Optimiza tu lista de compras con inteligencia sostenible para Chile." />
     <meta name="author" content="LiquiVerde" />
+    
+    <!-- PWA Meta Tags -->
+    <meta name="theme-color" content="#22c55e" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="apple-mobile-web-app-title" content="LiquiVerde" />
+    <link rel="manifest" href="/manifest.json" />
+    <link rel="apple-touch-icon" href="/placeholder.svg" />
 
     <meta property="og:title" content="LiquiVerde - Compras Inteligentes y Sostenibles" />
     <meta property="og:description" content="Plataforma de retail inteligente que te ayuda a ahorrar dinero y tomar decisiones sostenibles" />
@@ -20,5 +28,14 @@
   <body>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
+    <script>
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('/sw.js')
+            .then(reg => console.log('Service Worker registered'))
+            .catch(err => console.log('Service Worker registration failed'));
+        });
+      }
+    </script>
   </body>
 </html>

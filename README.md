@@ -65,6 +65,7 @@ LiquiVerde es una aplicación web fullstack que ayuda a los usuarios a optimizar
 ### APIs Externas Integradas
 1. **Open Food Facts API**: Información nutricional y de sostenibilidad de productos alimenticios
 2. **OpenStreetMap Nominatim**: Geocodificación y búsqueda de tiendas cercanas
+3. **Carbon Footprint Calculation**: Cálculo de huella de carbono por categoría y atributos
 
 ## 📊 Algoritmos Implementados
 
@@ -132,17 +133,57 @@ npm run dev
 # Click en el botón "Publish" en la interfaz de Lovable
 ```
 
+## 📱 Progressive Web App (PWA)
+
+La aplicación está configurada como PWA para funcionar como una app nativa:
+- ✅ **Instalable**: Puede instalarse en dispositivos móviles y escritorio vía manifest.json
+- ✅ **Funciona offline**: Service Workers cachean assets principales
+- ✅ **Optimizada para móviles**: Responsive design y meta tags apropiados
+- ✅ **Iconos y tema**: Configuración completa de iconos y color de tema (#22c55e)
+- ✅ **Shortcuts**: Accesos rápidos a Buscar y Mis Listas
+- ✅ **Actualización automática**: Caché versionado y limpieza de versiones antiguas
+
+**Archivos PWA**:
+- `/public/manifest.json` - Configuración de la PWA
+- `/public/sw.js` - Service Worker para caché offline
+- `index.html` - Meta tags y registro del Service Worker
+
+## 🌍 Cálculo de Huella de Carbono
+
+**Edge Function**: `calculate-carbon`
+
+Cálculo de emisiones de CO₂ basado en categorías y atributos de sostenibilidad:
+
+**Factores de emisión base** (kg CO₂e por kg de producto):
+- Alimentos: 2.5
+- Cuidado Personal: 3.2
+- Limpieza: 2.8
+- Papeles: 1.8
+- Infantil y bebé: 3.5
+- Cuidado adulto: 3.0
+- Hogar: 4.2
+
+**Modificadores aplicados**:
+- Productos orgánicos: -15% emisiones
+- Empaque reciclable: -10% emisiones
+- Biodegradable: -20% emisiones
+- Producción local (Chile): -25% emisiones
+- Empaque plástico: +15% emisiones
+
+El resultado se muestra en cada producto como kg CO₂e de transporte.
+
 ## 🤖 Uso de IA en el Desarrollo
 
 Este proyecto fue desarrollado con asistencia de **Lovable AI**, una herramienta de desarrollo asistido por IA que ayudó en:
 
 1. **Arquitectura inicial**: Diseño de base de datos y estructura de componentes
 2. **Implementación de algoritmos**: Desarrollo del algoritmo de mochila multi-objetivo
-3. **Integraciones**: Conexión con APIs externas (Open Food Facts, OpenStreetMap)
+3. **Integraciones**: Conexión con APIs externas (Open Food Facts, OpenStreetMap, Carbon Footprint)
 4. **UI/UX**: Diseño de componentes con Tailwind CSS y shadcn-ui
 5. **Edge Functions**: Implementación de funciones serverless en Supabase
+6. **PWA Configuration**: Setup completo de Progressive Web App
 
-**Nivel de asistencia**: ~70% del código fue generado con asistencia de IA, 30% fue refinamiento manual y debugging.
+**Nivel de asistencia**: ~75% del código fue generado con asistencia de IA, 25% fue refinamiento manual y debugging.
 
 ## 📁 Estructura del Proyecto
 
@@ -157,9 +198,12 @@ liquiverde/
 │   ├── functions/       # Edge Functions
 │   │   ├── optimize-knapsack/     # Algoritmo de optimización
 │   │   ├── fetch-product-info/    # Integración Open Food Facts
-│   │   └── geocode-stores/        # Integración OpenStreetMap
+│   │   ├── geocode-stores/        # Integración OpenStreetMap
+│   │   └── calculate-carbon/      # Cálculo de huella de carbono
 │   └── config.toml      # Configuración de Supabase
 └── public/              # Assets estáticos
+    ├── manifest.json    # Configuración PWA
+    └── sw.js            # Service Worker
 ```
 
 ## 🔐 Seguridad
@@ -178,11 +222,13 @@ liquiverde/
 
 ## 🚧 Roadmap Futuro
 
-- [ ] PWA (Progressive Web App) para instalación móvil
-- [ ] Integración con Carbon Interface API para cálculo real de CO₂
-- [ ] Sistema de notificaciones para cambios de precios
+- [x] ~~PWA (Progressive Web App) para instalación móvil~~ ✅ Implementado
+- [x] ~~Integración con Carbon Footprint para cálculo de CO₂~~ ✅ Implementado
+- [ ] Sistema de notificaciones push para cambios de precios
 - [ ] Historial de compras y análisis de tendencias
 - [ ] Compartir listas entre usuarios
+- [ ] Escaneo de código de barras con cámara móvil
+- [ ] Sistema de recompensas por compras sostenibles
 
 ## 📝 Licencia
 

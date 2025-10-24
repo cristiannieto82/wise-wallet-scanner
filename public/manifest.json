@@ -1,0 +1,49 @@
+{
+  "name": "LiquiVerde - Compras Inteligentes y Sostenibles",
+  "short_name": "LiquiVerde",
+  "description": "Ahorra dinero y cuida el planeta. Optimiza tu lista de compras con inteligencia sostenible para Chile.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#22c55e",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "/placeholder.svg",
+      "sizes": "192x192",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/placeholder.svg",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["shopping", "sustainability", "finance"],
+  "screenshots": [
+    {
+      "src": "/placeholder.svg",
+      "sizes": "540x720",
+      "type": "image/svg+xml",
+      "form_factor": "narrow"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Buscar Productos",
+      "short_name": "Buscar",
+      "description": "Buscar productos sostenibles",
+      "url": "/search",
+      "icons": [{ "src": "/placeholder.svg", "sizes": "96x96" }]
+    },
+    {
+      "name": "Mis Listas",
+      "short_name": "Listas",
+      "description": "Ver mis listas de compras",
+      "url": "/lists",
+      "icons": [{ "src": "/placeholder.svg", "sizes": "96x96" }]
+    }
+  ]
+}

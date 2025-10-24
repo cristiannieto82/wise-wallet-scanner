@@ -8,3 +8,6 @@ verify_jwt = false
 
 [functions.geocode-stores]
 verify_jwt = false
+
+[functions.calculate-carbon]
+verify_jwt = false
