@@ -3,6 +3,7 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { useState } from "react";
 import { Navigation } from "@/components/Navigation";
 import { Dashboard } from "@/pages/Dashboard";
 import { SearchProducts } from "@/pages/SearchProducts";
@@ -14,34 +15,44 @@ import { StoreMap } from "@/pages/StoreMap";
 import { Admin } from "@/pages/Admin";
 import { Auth } from "@/pages/Auth";
 import NotFound from "./pages/NotFound";
+import { FloatingChatButton } from "@/components/chat/FloatingChatButton";
+import { ChatPanel } from "@/components/chat/ChatPanel";
 
 const queryClient = new QueryClient();
 
-const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <BrowserRouter>
-        <div className="min-h-screen bg-background">
-          <Navigation />
-          <Routes>
-            <Route path="/" element={<Dashboard />} />
-            <Route path="/search" element={<SearchProducts />} />
-            <Route path="/lists" element={<ShoppingLists />} />
-            <Route path="/lists/:listId" element={<ListDetail />} />
-            <Route path="/optimize/:listId" element={<Optimize />} />
-            <Route path="/compare" element={<Compare />} />
-            <Route path="/stores" element={<StoreMap />} />
-            <Route path="/admin" element={<Admin />} />
-            <Route path="/auth" element={<Auth />} />
-            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </div>
-      </BrowserRouter>
-    </TooltipProvider>
-  </QueryClientProvider>
-);
+const App = () => {
+  const [chatOpen, setChatOpen] = useState(false);
+
+  return (
+    <QueryClientProvider client={queryClient}>
+      <TooltipProvider>
+        <Toaster />
+        <Sonner />
+        <BrowserRouter>
+          <div className="min-h-screen bg-background">
+            <Navigation />
+            <Routes>
+              <Route path="/" element={<Dashboard />} />
+              <Route path="/search" element={<SearchProducts />} />
+              <Route path="/lists" element={<ShoppingLists />} />
+              <Route path="/lists/:listId" element={<ListDetail />} />
+              <Route path="/optimize/:listId" element={<Optimize />} />
+              <Route path="/compare" element={<Compare />} />
+              <Route path="/stores" element={<StoreMap />} />
+              <Route path="/admin" element={<Admin />} />
+              <Route path="/auth" element={<Auth />} />
+              {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+            
+            {/* Chatbot Asesor Verde */}
+            <FloatingChatButton onClick={() => setChatOpen(true)} />
+            <ChatPanel open={chatOpen} onOpenChange={setChatOpen} />
+          </div>
+        </BrowserRouter>
+      </TooltipProvider>
+    </QueryClientProvider>
+  );
+};
 
 export default App;
