@@ -1,1 +1,10 @@
 project_id = "dwdtoduxzegssuyruksm"
+
+[functions.optimize-knapsack]
+verify_jwt = true
+
+[functions.fetch-product-info]
+verify_jwt = false
+
+[functions.geocode-stores]
+verify_jwt = false

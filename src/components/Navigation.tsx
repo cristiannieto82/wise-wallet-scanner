@@ -7,6 +7,7 @@ const navItems = [
   { to: '/search', icon: Search, label: 'Buscar' },
   { to: '/lists', icon: ListChecks, label: 'Listas' },
   { to: '/compare', icon: GitCompare, label: 'Comparar' },
+  { to: '/stores', icon: Map, label: 'Tiendas' },
 ];
 
 export const Navigation = () => {

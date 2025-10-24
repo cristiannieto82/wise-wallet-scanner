@@ -10,6 +10,7 @@ import { ShoppingLists } from "@/pages/ShoppingLists";
 import { ListDetail } from "@/pages/ListDetail";
 import { Compare } from "@/pages/Compare";
 import { Optimize } from "@/pages/Optimize";
+import { StoreMap } from "@/pages/StoreMap";
 import { Auth } from "@/pages/Auth";
 import NotFound from "./pages/NotFound";
 
@@ -30,6 +31,7 @@ const App = () => (
             <Route path="/lists/:listId" element={<ListDetail />} />
             <Route path="/optimize/:listId" element={<Optimize />} />
             <Route path="/compare" element={<Compare />} />
+            <Route path="/stores" element={<StoreMap />} />
             <Route path="/auth" element={<Auth />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />

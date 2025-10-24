@@ -41,63 +41,59 @@ export const Optimize = () => {
     mutationFn: async () => {
       setIsOptimizing(true);
       
-      // Get all products in the list that are not locked
-      const unlockedItems = list?.shopping_list_items?.filter((item: any) => !item.locked) || [];
+      // Use the multi-objective knapsack algorithm edge function
+      const { data, error } = await supabase.functions.invoke('optimize-knapsack', {
+        body: { 
+          listId,
+          weights: {
+            price: 0.4,
+            environmental: 0.3,
+            social: 0.3,
+          }
+        }
+      });
+
+      if (error) throw error;
       
-      if (unlockedItems.length === 0) {
-        throw new Error('No hay productos para optimizar');
+      if (!data.success) {
+        throw new Error(data.error || 'Error en optimización');
       }
 
-      // Get alternatives for each unlocked product
+      // Transform the optimization results to match the UI format
+      const optimization = data.optimization;
       const optimizations = [];
-      
-      for (const item of unlockedItems) {
-        const { data: alternatives, error } = await supabase
-          .from('alternatives')
-          .select(`
-            *,
-            alt_product:products!alternatives_alt_product_id_fkey(*)
-          `)
-          .eq('product_id', item.product_id)
-          .order('similarity', { ascending: false })
-          .limit(3);
 
-        if (error) continue;
-
-        // Calculate best alternative based on price, eco, and social scores
-        if (alternatives && alternatives.length > 0) {
-          const best = alternatives.reduce((best: any, alt: any) => {
-            const altProduct = alt.alt_product;
-            const originalProduct = item.products;
-            
-            // Calculate improvement score
-            const priceImprovement = (originalProduct.last_seen_price_clp - altProduct.last_seen_price_clp) / originalProduct.last_seen_price_clp;
-            const ecoImprovement = (altProduct.eco_score - originalProduct.eco_score) / 100;
-            const socialImprovement = (altProduct.social_score - originalProduct.social_score) / 100;
-            
-            const score = (priceImprovement * 0.4) + (ecoImprovement * 0.3) + (socialImprovement * 0.3);
-            
-            if (!best || score > best.score) {
-              return { ...alt, score, originalItem: item };
-            }
-            return best;
-          }, null);
-
-          if (best && best.score > 0.05) { // Only suggest if improvement is > 5%
-            optimizations.push(best);
+      for (const item of optimization.selectedItems) {
+        if (item.isAlternative) {
+          // Find the original item to compare
+          const originalItem = list?.shopping_list_items?.find((li: any) => li.id === item.itemId);
+          if (originalItem) {
+            optimizations.push({
+              alt_product_id: item.productId,
+              alt_product: item.product,
+              originalItem: originalItem,
+              product_id: originalItem.product_id,
+              explanation: `Esta alternativa mejora tu compra con un ${optimization.ecoImprovement > 0 ? 'mejor' : ''} impacto ambiental (${optimization.ecoImprovement.toFixed(0)} pts) y ${optimization.socialImprovement > 0 ? 'mejor' : ''} impacto social (${optimization.socialImprovement.toFixed(0)} pts), con un ahorro de ${formatCLP(optimization.savings)}.`
+            });
           }
         }
       }
 
-      return optimizations;
+      return {
+        suggestions: optimizations,
+        totalSavings: optimization.savings,
+        withinBudget: optimization.withinBudget,
+        ecoImprovement: optimization.ecoImprovement,
+        socialImprovement: optimization.socialImprovement,
+      };
     },
     onSuccess: (data) => {
-      setOptimizationResult(data);
+      setOptimizationResult(data.suggestions);
       setIsOptimizing(false);
-      if (data.length === 0) {
+      if (data.suggestions.length === 0) {
         toast.info('Tu lista ya está optimizada');
       } else {
-        toast.success(`Encontramos ${data.length} mejoras para tu lista`);
+        toast.success(`Encontramos ${data.suggestions.length} mejoras con ahorro de ${formatCLP(data.totalSavings)}`);
       }
     },
     onError: (error: any) => {
